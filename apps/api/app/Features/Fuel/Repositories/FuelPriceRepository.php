@@ -3,6 +3,7 @@
 namespace App\Features\Fuel\Repositories;
 
 use App\Features\Fuel\Models\FuelPrice;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class FuelPriceRepository
@@ -54,5 +55,64 @@ class FuelPriceRepository
         }
 
         return $query->get();
+    }
+
+    public function latestByCity(?int $cityId): Collection
+    {
+        return $this->latestByFilter($cityId, null, null);
+    }
+
+    /**
+     * @return array{start_date:?string,end_date:?string,items:Collection}
+     */
+    public function historyByFilter(?int $cityId, ?string $type, int $days): array
+    {
+        $maxDateQuery = FuelPrice::query()
+            ->join('fuel_stations', 'fuel_stations.id', '=', 'fuel_prices.fuel_station_id');
+
+        if ($cityId !== null) {
+            $maxDateQuery->where('fuel_stations.city_id', $cityId);
+        }
+
+        if ($type !== null) {
+            $maxDateQuery->where('fuel_prices.fuel_type', $type);
+        }
+
+        $maxDate = $maxDateQuery->max('fuel_prices.recorded_at');
+
+        if ($maxDate === null) {
+            return [
+                'start_date' => null,
+                'end_date' => null,
+                'items' => collect(),
+            ];
+        }
+
+        $endDate = CarbonImmutable::parse($maxDate);
+        $startDate = $endDate->subDays($days - 1)->toDateString();
+
+        $query = FuelPrice::query()
+            ->selectRaw(
+                'fuel_prices.recorded_at, fuel_prices.fuel_type, ROUND(AVG(fuel_prices.price_eur_liter), 3) as avg_price_eur_liter'
+            )
+            ->join('fuel_stations', 'fuel_stations.id', '=', 'fuel_prices.fuel_station_id')
+            ->whereBetween('fuel_prices.recorded_at', [$startDate, $endDate->toDateString()])
+            ->groupBy('fuel_prices.recorded_at', 'fuel_prices.fuel_type')
+            ->orderBy('fuel_prices.recorded_at')
+            ->orderBy('fuel_prices.fuel_type');
+
+        if ($cityId !== null) {
+            $query->where('fuel_stations.city_id', $cityId);
+        }
+
+        if ($type !== null) {
+            $query->where('fuel_prices.fuel_type', $type);
+        }
+
+        return [
+            'start_date' => $startDate,
+            'end_date' => $endDate->toDateString(),
+            'items' => $query->get(),
+        ];
     }
 }

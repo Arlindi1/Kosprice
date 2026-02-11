@@ -16,4 +16,17 @@ class FuelPriceService
     {
         return $this->fuelPriceRepository->latestByFilter($cityId, $fuelType, $recordedAt);
     }
+
+    public function listLatestByCity(?int $cityId): Collection
+    {
+        return $this->fuelPriceRepository->latestByCity($cityId);
+    }
+
+    /**
+     * @return array{start_date:?string,end_date:?string,items:Collection}
+     */
+    public function listHistory(?int $cityId, ?string $type, int $days): array
+    {
+        return $this->fuelPriceRepository->historyByFilter($cityId, $type, $days);
+    }
 }

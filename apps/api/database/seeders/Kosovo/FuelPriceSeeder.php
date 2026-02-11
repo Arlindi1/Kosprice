@@ -5,6 +5,7 @@ namespace Database\Seeders\Kosovo;
 use App\Features\Fuel\Enums\FuelType;
 use App\Features\Fuel\Models\FuelPrice;
 use App\Features\Fuel\Models\FuelStation;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
 class FuelPriceSeeder extends Seeder
@@ -15,6 +16,8 @@ class FuelPriceSeeder extends Seeder
     public function run(): void
     {
         $stationIds = FuelStation::query()->pluck('id', 'name');
+        $startDate = CarbonImmutable::parse('2026-01-12');
+        $days = 30;
 
         $basePrices = [
             'Shell Prishtine' => [
@@ -53,23 +56,25 @@ class FuelPriceSeeder extends Seeder
             foreach ($prices as $fuelType => $price) {
                 $stationId = $stationIds[$stationName];
 
-                FuelPrice::query()->updateOrCreate(
-                    [
-                        'fuel_station_id' => $stationId,
-                        'fuel_type' => $fuelType,
-                        'recorded_at' => '2026-02-01',
-                    ],
-                    ['price_eur_liter' => $price]
-                );
+                for ($dayIndex = 0; $dayIndex < $days; $dayIndex++) {
+                    $recordedAt = $startDate->addDays($dayIndex)->toDateString();
+                    $isLatestDay = $dayIndex === ($days - 1);
+                    $progress = $dayIndex / ($days - 1);
+                    $dailySwing = (($dayIndex % 6) - 2) * 0.001;
 
-                FuelPrice::query()->updateOrCreate(
-                    [
-                        'fuel_station_id' => $stationId,
-                        'fuel_type' => $fuelType,
-                        'recorded_at' => '2026-02-10',
-                    ],
-                    ['price_eur_liter' => round($price + 0.008, 3)]
-                );
+                    $resolvedPrice = $isLatestDay
+                        ? round($price + 0.008, 3)
+                        : round($price + (0.008 * $progress) + $dailySwing, 3);
+
+                    FuelPrice::query()->updateOrCreate(
+                        [
+                            'fuel_station_id' => $stationId,
+                            'fuel_type' => $fuelType,
+                            'recorded_at' => $recordedAt,
+                        ],
+                        ['price_eur_liter' => $resolvedPrice]
+                    );
+                }
             }
         }
     }

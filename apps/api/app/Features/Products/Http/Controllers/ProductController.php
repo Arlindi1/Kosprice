@@ -2,24 +2,23 @@
 
 namespace App\Features\Products\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Features\Products\Http\Requests\ListProductsRequest;
+use App\Features\Products\Http\Resources\ProductResource;
+use App\Features\Products\Services\ProductService;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController
 {
-    public function index(Request $request)
+    public function __construct(
+        private readonly ProductService $productService
+    ) {
+    }
+
+    public function index(ListProductsRequest $request): AnonymousResourceCollection
     {
-        $category = $request->query('category');
+        $result = $this->productService->listProducts($request->category());
 
-        $query = DB::table('products')->select('id','name','category')
-            ->when($category, fn($q) => $q->where('category', $category))
-            ->orderBy('category')->orderBy('name');
-
-        $items = $query->get();
-
-        return response()->json([
-            'data' => $items,
-            'meta' => ['count' => $items->count()],
-        ]);
+        return ProductResource::collection($result['items'])
+            ->additional(['meta' => $result['meta']]);
     }
 }

@@ -13,18 +13,21 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         $products = [
-            ['name' => 'Bread 500g', 'unit' => 'piece'],
-            ['name' => 'Milk 1L', 'unit' => 'liter'],
-            ['name' => 'Eggs 10pcs', 'unit' => 'pack'],
-            ['name' => 'Rice 1kg', 'unit' => 'kg'],
-            ['name' => 'Chicken 1kg', 'unit' => 'kg'],
-            ['name' => 'Sunflower Oil 1L', 'unit' => 'liter'],
+            ['name' => 'Bread 500g', 'category' => 'bakery', 'unit' => 'piece'],
+            ['name' => 'Milk 1L', 'category' => 'dairy', 'unit' => 'liter'],
+            ['name' => 'Eggs 10pcs', 'category' => 'dairy', 'unit' => 'pack'],
+            ['name' => 'Rice 1kg', 'category' => 'grains', 'unit' => 'kg'],
+            ['name' => 'Chicken 1kg', 'category' => 'meat', 'unit' => 'kg'],
+            ['name' => 'Sunflower Oil 1L', 'category' => 'oil', 'unit' => 'liter'],
         ];
 
         foreach ($products as $product) {
             Product::query()->updateOrCreate(
                 ['name' => $product['name']],
-                ['unit' => $product['unit']]
+                [
+                    'category' => $product['category'],
+                    'unit' => $product['unit'],
+                ]
             );
         }
     }

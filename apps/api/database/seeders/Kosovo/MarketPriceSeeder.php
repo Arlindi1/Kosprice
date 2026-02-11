@@ -5,6 +5,7 @@ namespace Database\Seeders\Kosovo;
 use App\Features\Markets\Models\Market;
 use App\Features\Markets\Models\MarketPrice;
 use App\Features\Markets\Models\Product;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
 class MarketPriceSeeder extends Seeder
@@ -16,6 +17,8 @@ class MarketPriceSeeder extends Seeder
     {
         $marketIds = Market::query()->pluck('id', 'name');
         $productIds = Product::query()->pluck('id', 'name');
+        $startDate = CarbonImmutable::parse('2026-01-12');
+        $days = 30;
 
         $basePrices = [
             'ETC Prishtine' => [
@@ -65,23 +68,25 @@ class MarketPriceSeeder extends Seeder
                 $marketId = $marketIds[$marketName];
                 $productId = $productIds[$productName];
 
-                MarketPrice::query()->updateOrCreate(
-                    [
-                        'market_id' => $marketId,
-                        'product_id' => $productId,
-                        'recorded_at' => '2026-02-01',
-                    ],
-                    ['price_eur' => $price]
-                );
+                for ($dayIndex = 0; $dayIndex < $days; $dayIndex++) {
+                    $recordedAt = $startDate->addDays($dayIndex)->toDateString();
+                    $isLatestDay = $dayIndex === ($days - 1);
+                    $progress = $dayIndex / ($days - 1);
+                    $dailySwing = (($dayIndex % 7) - 3) * 0.005;
 
-                MarketPrice::query()->updateOrCreate(
-                    [
-                        'market_id' => $marketId,
-                        'product_id' => $productId,
-                        'recorded_at' => '2026-02-10',
-                    ],
-                    ['price_eur' => round($price + 0.03, 2)]
-                );
+                    $resolvedPrice = $isLatestDay
+                        ? round($price + 0.03, 2)
+                        : round($price + (0.03 * $progress) + $dailySwing, 2);
+
+                    MarketPrice::query()->updateOrCreate(
+                        [
+                            'market_id' => $marketId,
+                            'product_id' => $productId,
+                            'recorded_at' => $recordedAt,
+                        ],
+                        ['price_eur' => $resolvedPrice]
+                    );
+                }
             }
         }
     }
