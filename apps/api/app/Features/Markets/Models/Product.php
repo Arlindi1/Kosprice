@@ -12,8 +12,18 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'brand',
+        'variant',
         'category',
+        'image_key',
         'unit',
+        'unit_label',
+        'brand_hint',
+        'is_core_basket',
+    ];
+
+    protected $casts = [
+        'is_core_basket' => 'boolean',
     ];
 
     public function marketPrices(): HasMany

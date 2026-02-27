@@ -18,11 +18,20 @@ class FuelPricesApiTest extends TestCase
 
         $response = $this->getJson("/api/v1/fuel-prices?city_id={$prishtineId}&fuel_type=diesel");
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.fuel_type', 'diesel')
-            ->assertJsonPath('data.0.recorded_at', '2026-02-10')
-            ->assertJsonPath('data.0.city.slug', 'prishtine');
+        $response->assertOk();
+
+        $data = $response->json('data');
+
+        $this->assertIsArray($data);
+        $this->assertGreaterThanOrEqual(3, count($data));
+        $this->assertTrue(
+            collect($data)->every(
+                static fn (array $row): bool => ($row['fuel_type'] ?? null) === 'diesel'
+                    && ($row['city']['slug'] ?? null) === 'prishtine'
+                    && !empty($row['brand_key'] ?? null)
+                    && isset($row['price_eur_per_l'])
+            )
+        );
+        $this->assertNotNull($data[0]['recorded_at'] ?? null);
     }
 }

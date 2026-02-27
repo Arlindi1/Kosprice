@@ -19,7 +19,8 @@ class FuelHistoryController
         $history = $this->fuelPriceService->listHistory(
             $request->cityId(),
             $request->type(),
-            $request->days()
+            $request->days(),
+            $request->brandKey()
         );
 
         return FuelHistoryItemResource::collection($history['items'])
@@ -27,6 +28,7 @@ class FuelHistoryController
                 'meta' => [
                     'city_id' => $request->cityId(),
                     'type' => $request->type(),
+                    'brand_key' => $request->brandKey(),
                     'days' => $request->days(),
                     'start_date' => $history['start_date'],
                     'end_date' => $history['end_date'],

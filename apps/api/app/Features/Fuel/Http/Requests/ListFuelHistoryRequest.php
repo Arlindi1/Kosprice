@@ -21,6 +21,7 @@ class ListFuelHistoryRequest extends FormRequest
         return [
             'city_id' => ['nullable', 'integer', 'exists:cities,id'],
             'type' => ['nullable', Rule::in(FuelType::values())],
+            'brand_key' => ['nullable', 'string', 'max:60'],
             'days' => ['nullable', 'integer', 'min:1', 'max:90'],
         ];
     }
@@ -33,6 +34,11 @@ class ListFuelHistoryRequest extends FormRequest
     public function type(): ?string
     {
         return $this->validated('type');
+    }
+
+    public function brandKey(): ?string
+    {
+        return $this->validated('brand_key');
     }
 
     public function days(): int

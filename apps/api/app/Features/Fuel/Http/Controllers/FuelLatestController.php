@@ -17,7 +17,10 @@ class FuelLatestController
     public function index(ListFuelLatestRequest $request): AnonymousResourceCollection
     {
         return FuelPriceResource::collection(
-            $this->fuelPriceService->listLatestByCity($request->cityId())
+            $this->fuelPriceService->listLatestByCity(
+                $request->cityId(),
+                $request->fuelType()
+            )
         );
     }
 }

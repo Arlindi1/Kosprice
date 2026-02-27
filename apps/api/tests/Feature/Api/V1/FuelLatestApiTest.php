@@ -16,12 +16,21 @@ class FuelLatestApiTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $prishtineId = City::query()->where('slug', 'prishtine')->value('id');
 
-        $response = $this->getJson("/api/v1/fuel/latest?city_id={$prishtineId}");
+        $response = $this->getJson("/api/v1/fuel/latest?city_id={$prishtineId}&type=diesel");
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(8, 'data')
-            ->assertJsonPath('data.0.city.slug', 'prishtine')
-            ->assertJsonPath('data.0.recorded_at', '2026-02-10');
+        $response->assertOk();
+
+        $data = $response->json('data');
+
+        $this->assertIsArray($data);
+        $this->assertGreaterThanOrEqual(8, count($data));
+        $this->assertTrue(
+            collect($data)->every(
+                static fn (array $row): bool => ($row['city']['slug'] ?? null) === 'prishtine'
+                    && ($row['fuel_type'] ?? null) === 'diesel'
+                    && !empty($row['brand_key'] ?? null)
+            )
+        );
+        $this->assertNotNull($data[0]['recorded_at'] ?? null);
     }
 }

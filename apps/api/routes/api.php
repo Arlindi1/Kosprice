@@ -7,9 +7,13 @@ use App\Features\Cities\Http\Controllers\CityController;
 use App\Features\Fuel\Http\Controllers\FuelHistoryController;
 use App\Features\Fuel\Http\Controllers\FuelLatestController;
 use App\Features\Fuel\Http\Controllers\FuelPriceController;
+use App\Features\Fuel\Http\Controllers\FuelBrandsController;
+use App\Features\Fuel\Http\Controllers\FuelStationsController;
 use App\Features\Markets\Http\Controllers\MarketBasketController;
 use App\Features\Markets\Http\Controllers\MarketController;
+use App\Features\Products\Http\Controllers\ProductCheapestController;
 use App\Features\Products\Http\Controllers\ProductController;
+use App\Features\Products\Http\Controllers\ProductPricesController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -17,9 +21,16 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/markets', [MarketController::class, 'index']);
     Route::get('/markets/{market}/basket', [MarketBasketController::class, 'show']);
     Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/catalog', [ProductController::class, 'catalog']);
+    Route::get('/products/{product}/cheapest', [ProductCheapestController::class, 'show'])
+        ->whereNumber('product');
+    Route::get('/products/{product}/prices', [ProductPricesController::class, 'index'])
+        ->whereNumber('product');
 
     Route::get('/fuel-prices', [FuelPriceController::class, 'index']);
     Route::get('/fuel/latest', [FuelLatestController::class, 'index']);
+    Route::get('/fuel/brands', [FuelBrandsController::class, 'index']);
+    Route::get('/fuel/stations', [FuelStationsController::class, 'index']);
     Route::get('/fuel/history', [FuelHistoryController::class, 'index']);
 
     Route::get('/basket/total', [BasketTotalController::class, 'show']);

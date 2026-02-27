@@ -14,6 +14,7 @@ class FuelStation extends Model
 
     protected $fillable = [
         'city_id',
+        'brand_key',
         'name',
         'address',
     ];
