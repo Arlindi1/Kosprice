@@ -1,5 +1,18 @@
 <?php
 
+$allowedOrigins = array_values(array_filter(
+    array_map(
+        'trim',
+        explode(',', (string) env('CORS_ALLOWED_ORIGINS', (string) env('FRONTEND_URL', '')))
+    ),
+    static fn (string $origin): bool => $origin !== ''
+));
+
+$allowedOriginPatterns = array_values(array_filter(
+    array_map('trim', explode(',', (string) env('CORS_ALLOWED_ORIGINS_PATTERNS', ''))),
+    static fn (string $pattern): bool => $pattern !== ''
+));
+
 return [
 
     /*
@@ -19,9 +32,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => $allowedOrigins,
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => $allowedOriginPatterns,
 
     'allowed_headers' => ['*'],
 
