@@ -24,3 +24,4 @@ apps/web/.env.*
 
 # PHPUnit cache
 apps/api/.phpunit.result.cache
+AGENTS.md
